@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <title>Formularz</title>
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"></script>
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"></script>
+   <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+
+<body>
+   <main role="main" class="flex-shrink-0">
+      <div class="container">
+         <form id="main" role="form" class="form-horizontal">
+            <div class="form-group">
+               <label>Wybierz miejsca:</label>
+               <div class="row">
+                  <div v-for="(row, rowIndex) in seats" class="col-8 btn-group btn-group-toggle" data-toggle="buttons">
+                     <label v-for="(seat, seatIndex) in row" class="btn" :disabled="seat==0"
+                        v-bind:class="[ seat==0 ? 'disabled' : 'btn-primary' ]">
+                        <input type="checkbox" :id="'seat-'+rowIndex+'-'+seatIndex" autocomplete="off"
+                           :disabled="seat==0">{{rowIndex+'-'+seatIndex}}
+                     </label>
+                  </div>
+               </div>
+            </div>
+            <div class="form-group">
+               <label for="hour">Wybierz godzinę:</label>
+               <select class="form-control" id="hour" v-model="hour">
+                  <option v-for="h in hours">{{h}}</option>
+               </select>
+            </div>
+            <div class="form-group">
+               <label for="discount">Zniżka:</label>
+               <select class="form-control" id="discount" v-model="discount">
+                  <option v-for="d in discounts">{{d}}</option>
+               </select>
+            </div>
+            <div class="form-group">
+               <label>Dane osobowe</label>
+            </div>
+            <div class="form-group">
+               <label for="name">Imię</label>
+               <input type="text" class="form-control" id="name" v-model="name">
+            </div>
+            <div class="form-group">
+               <label for="surname">Nazwisko</label>
+               <input type="text" class="form-control" id="surname" v-model="surname">
+            </div>
+            <div class="form-group">
+               <label for="email">Email</label>
+               <input type="text" class="form-control" id="email" v-model="email">
+            </div>
+            <div class="form-group">
+               <label for="number">Numer Telefonu</label>
+               <input type="text" class="form-control" id="number" v-model="number">
+            </div>
+            <button type="submit" class="btn btn-default">Zatwierdź</button>
+         </form>
+      </div>
+   </main>
+   <script src="index.js"></script>
+</body>
+
+</html>
