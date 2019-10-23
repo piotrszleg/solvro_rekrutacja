@@ -38,7 +38,7 @@
             </div>
             <div class="form-group">
                <label for="hour">Wybierz godzinę:</label>
-               <select class="form-control" id="hour" v-model="hour">
+               <select v-model="hour" class="form-control" id="hour" :value="hour" @input="hour=$event.target.value">
                   <option v-for="h in hours">{{h}}</option>
                </select>
             </div>

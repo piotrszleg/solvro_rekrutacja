@@ -10,10 +10,10 @@ var vue_det = new Vue({
    data: {
       seats:[],
       selectedSeats:new Set(),
-      hours:["13:00", "16:00"],
+      hours:[],
       hour:"",
       discounts:["brak", "dziecko do 18 lat", "student", "emeryt"],
-      discount:"",
+      discount:"brak",
       name:"",
       surname:"",
       email:"",
@@ -45,13 +45,15 @@ var vue_det = new Vue({
          body: JSON.stringify({"movie":"78483421"}) // body data type must match "Content-Type" header
        });
        const data=await response.json();
-       // change seat {index : isOccupied} to isOccupied
+       // change rows from arrays of objects {index : isOccupied} to maps index=>isOccupied
        this.seats=objectMap(data.arrangement,row=>
          row.reduce((result, element)=>{
             const firstField=Object.keys(element)[0];
             result[firstField]=element[firstField];
             return result;
-         }, {}));
+         }, {})
+       );
        this.hours=data.sessions.map(timestamp=>new Date(timestamp*1000));
+       this.hour=this.hours[0];
    },
 });
