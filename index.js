@@ -9,6 +9,7 @@ var vue_det = new Vue({
    el: '#main',
    data: {
       seats:[],
+      selectedSeats:new Set(),
       hours:["13:00", "16:00"],
       hour:"",
       discounts:["brak", "dziecko do 18 lat", "student", "emeryt"],
@@ -17,6 +18,16 @@ var vue_det = new Vue({
       surname:"",
       email:"",
       number:"",
+   },
+   methods:{
+      setNegate: function(set, value) {
+         if(set.has(value)){
+            set.delete(value);
+         } else {
+           set.add(value);
+         }
+         console.log(set)
+      }
    },
    mounted: async function() {
       const url="http://localhost:5000/movie";
@@ -34,8 +45,13 @@ var vue_det = new Vue({
          body: JSON.stringify({"movie":"78483421"}) // body data type must match "Content-Type" header
        });
        const data=await response.json();
-       this.seats=objectMap(data.arrangement,row=>row.map((element, index)=>element[1+index]));
-       console.log(this.seats["A"]["0"]);
+       // change seat {index : isOccupied} to isOccupied
+       this.seats=objectMap(data.arrangement,row=>
+         row.reduce((result, element)=>{
+            const firstField=Object.keys(element)[0];
+            result[firstField]=element[firstField];
+            return result;
+         }, {}));
        this.hours=data.sessions.map(timestamp=>new Date(timestamp*1000));
    },
 });

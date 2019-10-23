@@ -27,10 +27,11 @@
                <label>Wybierz miejsca:</label>
                <div class="row">
                   <div v-for="(row, rowIndex) in seats" class="col-8 btn-group btn-group-toggle" data-toggle="buttons">
-                     <label v-for="(seat, seatIndex) in row" class="btn" :disabled="seat==0"
-                        v-bind:class="[ seat==0 ? 'disabled' : 'btn-primary' ]">
-                        <input type="checkbox" :id="'seat-'+rowIndex+'-'+seatIndex" autocomplete="off"
-                           :disabled="seat==0">{{rowIndex+'-'+seatIndex}}
+                     <label v-for="(seat, seatIndex) in row" class="btn" :disabled="seat==1"
+                        v-bind:class="[ seat==1 ? 'disabled' : 'btn-primary' ]"
+                        v-on:click="setNegate(selectedSeats, ''+rowIndex+'-'+seatIndex)">
+                        <input type="checkbox" :id="'seat-'+rowIndex+'-'+seatIndex" autocomplete="off" :disabled="seat==1">
+                           {{rowIndex+'-'+seatIndex}}
                      </label>
                   </div>
                </div>
