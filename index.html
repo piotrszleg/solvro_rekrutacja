@@ -17,89 +17,99 @@
       integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
       crossorigin="anonymous"></script>
    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+   <script src="https://unpkg.com/vuex@3.1.1/dist/vuex.js"></script>
    <style>
-   .panel {
-      position: absolute;
-      height : 100vh;
-      width : 100vw;
-      display:none;
-   }
-   .panel.enabled{
-      display:block;
-   }
+      .panel {
+         position: absolute;
+         height: 100vh;
+         width: 100vw;
+         display: none;
+         transform: translateX(100%);
+      }
+
+      .panel.enabled {
+         display: block;
+         transform: translateX(0%);
+      }
    </style>
 </head>
 
 <body>
    <main id="main" role="main" class="flex-shrink-0">
-      <div class="panel" v-bind:class="{enabled:page==0}">
-            <div class="container">
-               <h1 class="font-weight-bold">"{{title}}"</h1>
-               <label>Wybierz godzinę seansu</label>
-               <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                  <label @click="session=s" v-for="s in sessions" class="btn btn-secondary" v-bind:class="{active:session==s}">
-                     <input type="radio" name="sessions" :id="s" autocomplete="off" >{{s}}
-                  </label>
-               </div>
-               <button class="btn btn-primary" @click="page++">dalej</button>
+      <page footer="true" index="0" :selected-page="selectedPage">
+         <h1 class="font-weight-bold">"{{title}}"</h1>
+         <h4>Seans:</h4>
+         <div class="btn-group btn-group-toggle btn-group-vertical col-sm-12" data-toggle="buttons">
+            <label @click="formData.session=s" v-for="s in sessions" class="btn btn-secondary"
+               v-bind:class="{active:formData.session==s}">
+               <input type="radio" name="sessions" :id="s" autocomplete="off">{{s}}
+            </label>
          </div>
-      </div>
-      <div class="panel" v-bind:class="{enabled:page==1}">
-         <div class="container">
-               <form role="form" class="form-horizontal" style="margin: 5% 5% 10%;">
-                  <h1>Podsumowanie<br><span class="font-weight-bold">"{{title}}"</span></h1>
-                  <div class="form-group">
-                     <label for="session">Wybierz seans:</label>
-                     <select v-model="session" class="form-control" id="session" v-model="session">
-                        <option v-for="s in sessions">{{s}}</option>
-                     </select>
-                  </div>
-                  <div class="form-group">
-                     <label>Wybierz miejsca:</label>
-                     <div class="row">
-                        <div v-for="(row, rowIndex) in seats" class="col-8 btn-group btn-group-toggle" data-toggle="buttons">
-                           <label v-for="(seat, seatIndex) in row" class="btn" :disabled="seat==1"
-                              v-bind:class="[ seat==1 ? 'disabled' : 'btn-primary' ]"
-                              @click="setNegate(selectedSeats, ''+rowIndex+'-'+seatIndex); selectedSeatsSize=selectedSeats.size;">
-                              <input type="checkbox" :id="'seat-'+rowIndex+'-'+seatIndex" autocomplete="off" :disabled="seat==1">
-                                 {{rowIndex+'-'+seatIndex}}
-                           </label>
-                        </div>
-                     </div>
-                  </div>
-                  <div class="form-group">
-                     <label for="discount">Zniżka:</label>
-                     <select class="form-control" id="discount" v-model="discount">
-                        <option v-for="d in discounts" v-bind:value="d">{{d.toString()}}</option>
-                     </select>
-                  </div>
-                  <h3>Do zapłaty:</h3>
-                  <p>{{selectedSeatsSize}}x20zł<br>
-                  <span v-if="discount.value>0">-{{discount.value}}%<br></span>=>
-                  <span class="font-weight-bold">{{toPay}}</span></p>
-                  <div class="form-group">
-                  <h3>Dane osobowe</h3>
-                  </div>
-                  <div class="form-group">
-                     <label for="name">Imię</label>
-                     <input type="text" class="form-control" id="name" v-model="name">
-                  </div>
-                  <div class="form-group">
-                     <label for="surname">Nazwisko</label>
-                     <input type="text" class="form-control" id="surname" v-model="surname">
-                  </div>
-                  <div class="form-group">
-                     <label for="email">Email</label>
-                     <input type="text" class="form-control" id="email" v-model="email">
-                  </div>
-                  <div class="form-group">
-                     <label for="number">Numer Telefonu</label>
-                     <input type="text" class="form-control" id="number" v-model="number">
-                  </div>
-                  <button type="submit" class="btn btn-primary">Zatwierdź</button>
-               </form>
+         <hr>
+      </page>
+      <page footer="true" index="1" :selected-page="selectedPage">
+         <form role="form" class="form-horizontal">
+            <seat-selection :form-data="formData" :seats="seats"></seat-selection>
+         </form>
+      </page>
+      <page footer="true" index="2" :selected-page="selectedPage">
+         <h1>Zniżka:</h1>
+         <hr>
+         <div class="btn-group btn-group-toggle btn-group-vertical col-sm-12" data-toggle="buttons">
+            <label @click="formData.discount=d" v-for="d in discounts" class="btn btn-secondary"
+               v-bind:class="{active:formData.discount==d}">
+               <input type="radio" name="discounts" :id="d" autocomplete="off">{{d}}
+            </label>
          </div>
-      </div>
+         <hr>
+         <h3>Do zapłaty:</h3>
+         <p>{{formData.selectedSeatsSize}}x20zł<br>
+            <span v-if="formData.discount.value>0">-{{formData.discount.value}}%<br></span>=>
+            <span class="font-weight-bold">{{toPay}}zł</span></p>
+      </page>
+      <page footer="true" index="3" :selected-page="selectedPage">
+         <form role="form" class="form-horizontal">
+            <personal-details :form-data="formData"></personal-details>
+         </form>
+      </page>
+      <page index="4" :selected-page="selectedPage">
+         <form role="form" class="form-horizontal" style="margin: 5% 5% 10%;">
+            <h1>Podsumowanie</h1>
+            <hr>
+            <div class="form-group">
+               <label for="film">Film:</label>
+               <input type="text" class="form-control" id="film" v-bind:value="title" readonly>
+            </div>
+            <div class="form-group">
+               <label for="formData.session">Seans:</label>
+               <select v-model="formData.session" class="form-control" id="session" v-model="formData.session">
+                  <option v-for="s in sessions">{{s}}</option>
+               </select>
+            </div>
+            <seat-selection :form-data="formData" :seats="seats"></seat-selection>
+            <div class="form-group">
+               <label for="discount">Zniżka:</label>
+               <select class="form-control" id="discount" v-model="formData.discount">
+                  <option v-for="d in discounts" v-bind:value="d">{{d.toString()}}</option>
+               </select>
+            </div>
+            <h3>Do zapłaty:</h3>
+            <p>{{formData.selectedSeatsSize}}x20zł<br>
+               <span v-if="formData.discount.value>0">-{{formData.discount.value}}%<br></span>=>
+               <span class="font-weight-bold">{{toPay}}zł</span></p>
+            <hr>
+            <personal-details :form-data="formData"></personal-details>
+            <hr>
+            <button type="button" class="btn btn-primary float-left" @click="selectedPage.index--">Powrót</button>
+            <button type="button" class="btn btn-primary float-right" @click="selectedPage.index++">Zatwierdź</button>
+         </form>
+      </page>
+      <page footer="true" index="5" :selected-page="selectedPage">
+         <h1>Dane które byłyby wysłane do serwera</h1>
+         <div class="text-left">
+            <code  v-html="JSON.stringify(formData, null, '&emsp;&emsp;&emsp;').replace(/(\r\n|\r|\n)/g, '<br>')"></code>   
+         </div>
+      </page>
    </main>
    <script src="index.js"></script>
 </body>
