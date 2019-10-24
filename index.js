@@ -5,31 +5,56 @@ function objectMap(object, mapFn) {
    }, {})
  }
 
-var vue_det = new Vue({
+ class Discount {
+    constructor(name, value){
+       this.name=name;
+       this.value=value;
+    }
+    toString(){
+      return `${this.name} (${this.value}%)`;
+    }
+ }
+ Discount.empty=new Discount("brak", 0);
+
+var app = new Vue({
    el: '#main',
    data: {
+      page:0,
+      title:"",
       seats:[],
       selectedSeats:new Set(),
-      hours:[],
-      hour:"",
-      discounts:["brak", "dziecko do 18 lat", "student", "emeryt"],
-      discount:"brak",
+      selectedSeatsSize:0,
+      sessions:[],
+      session:"",
+      discounts:[
+         Discount.empty,
+         new Discount("dziecko do 18 lat", 50),
+         new Discount("student", 20),
+         new Discount("emeryt", 20)
+      ],
+      discount:Discount.empty,
+      basePrice:20,
       name:"",
       surname:"",
       email:"",
       number:"",
    },
    methods:{
-      setNegate: function(set, value) {
+      setNegate(set, value) {
          if(set.has(value)){
             set.delete(value);
          } else {
            set.add(value);
          }
-         console.log(set)
       }
    },
-   mounted: async function() {
+   computed:{
+      toPay(){
+         const withoutDiscount=this.selectedSeatsSize*this.basePrice;
+         return withoutDiscount-withoutDiscount*(this.discount.value/100);
+      }
+   },
+   async mounted() {
       const url="http://localhost:5000/movie";
       const response = await fetch(url, {
          method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -53,7 +78,8 @@ var vue_det = new Vue({
             return result;
          }, {})
        );
-       this.hours=data.sessions.map(timestamp=>new Date(timestamp*1000));
-       this.hour=this.hours[0];
+       this.title=data.title;
+       this.sessions=data.sessions.map(timestamp=>new Date(timestamp*1000).toLocaleString());
+       this.session=this.sessions[0];
    },
 });
