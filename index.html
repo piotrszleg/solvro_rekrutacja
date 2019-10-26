@@ -5,8 +5,7 @@
    <title>Formularz</title>
    <meta charset="utf-8">
    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+   <link rel="stylesheet" href="bootstrap.min.css">
    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
       crossorigin="anonymous"></script>
@@ -37,15 +36,7 @@
 <body>
    <main id="main" role="main" class="flex-shrink-0">
       <page footer="true" index="0" :selected-page="selectedPage">
-         <h1 class="font-weight-bold">"{{title}}"</h1>
-         <h4>Seans:</h4>
-         <div class="btn-group btn-group-toggle btn-group-vertical col-sm-12" data-toggle="buttons">
-            <label @click="formData.session=s" v-for="s in sessions" class="btn btn-secondary"
-               v-bind:class="{active:formData.session==s}">
-               <input type="radio" name="sessions" :id="s" autocomplete="off">{{s}}
-            </label>
-         </div>
-         <hr>
+         <session-selection :form-data="formData" :title="title" :sessions="sessions"></session-selection>
       </page>
       <page footer="true" index="1" :selected-page="selectedPage">
          <form role="form" class="form-horizontal">
@@ -53,19 +44,7 @@
          </form>
       </page>
       <page footer="true" index="2" :selected-page="selectedPage">
-         <h1>Zniżka:</h1>
-         <hr>
-         <div class="btn-group btn-group-toggle btn-group-vertical col-sm-12" data-toggle="buttons">
-            <label @click="formData.discount=d" v-for="d in discounts" class="btn btn-secondary"
-               v-bind:class="{active:formData.discount==d}">
-               <input type="radio" name="discounts" :id="d" autocomplete="off">{{d}}
-            </label>
-         </div>
-         <hr>
-         <h3>Do zapłaty:</h3>
-         <p>{{formData.selectedSeatsSize}}x20zł<br>
-            <span v-if="formData.discount.value>0">-{{formData.discount.value}}%<br></span>=>
-            <span class="font-weight-bold">{{toPay}}zł</span></p>
+         <discount-selection :form-data="formData" :discounts="discounts" :to-pay="toPay"></discount-selection>
       </page>
       <page footer="true" index="3" :selected-page="selectedPage">
          <form role="form" class="form-horizontal">
@@ -73,38 +52,9 @@
          </form>
       </page>
       <page index="4" :selected-page="selectedPage">
-         <form role="form" class="form-horizontal" style="margin: 5% 5% 10%;">
-            <h1>Podsumowanie</h1>
-            <hr>
-            <div class="form-group">
-               <label for="film">Film:</label>
-               <input type="text" class="form-control" id="film" v-bind:value="title" readonly>
-            </div>
-            <div class="form-group">
-               <label for="formData.session">Seans:</label>
-               <select v-model="formData.session" class="form-control" id="session" v-model="formData.session">
-                  <option v-for="s in sessions">{{s}}</option>
-               </select>
-            </div>
-            <seat-selection :form-data="formData" :seats="seats"></seat-selection>
-            <div class="form-group">
-               <label for="discount">Zniżka:</label>
-               <select class="form-control" id="discount" v-model="formData.discount">
-                  <option v-for="d in discounts" v-bind:value="d">{{d.toString()}}</option>
-               </select>
-            </div>
-            <h3>Do zapłaty:</h3>
-            <p>{{formData.selectedSeatsSize}}x20zł<br>
-               <span v-if="formData.discount.value>0">-{{formData.discount.value}}%<br></span>=>
-               <span class="font-weight-bold">{{toPay}}zł</span></p>
-            <hr>
-            <personal-details :form-data="formData"></personal-details>
-            <hr>
-            <button type="button" class="btn btn-primary float-left" @click="selectedPage.index--">Powrót</button>
-            <button type="button" class="btn btn-primary float-right" @click="selectedPage.index++">Zatwierdź</button>
-         </form>
+         <recapitulation :form-data="formData" :title="title" :seats="seats" :discounts="discounts" :sessions="sessions" :selected-page="selectedPage" :to-pay="toPay"></recapitulation>
       </page>
-      <page footer="true" index="5" :selected-page="selectedPage">
+      <page index="5" :selected-page="selectedPage">
          <h1>Dane które byłyby wysłane do serwera</h1>
          <div class="text-left">
             <code  v-html="JSON.stringify(formData, null, '&emsp;&emsp;&emsp;').replace(/(\r\n|\r|\n)/g, '<br>')"></code>   
