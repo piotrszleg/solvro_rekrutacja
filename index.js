@@ -1,11 +1,11 @@
 Vue.component('page', {
-   props:["index", "selectedPage", "footer", "nextPredicate"],
+   props:["index", "selectedPage", "validator", "nextText"],
    methods:{
       previous(){
          this.selectedPage.index--;
       },
       next(){
-         if(this.nextPredicate===undefined || this.nextPredicate()){
+         if(this.validator===undefined || this.validator()){
             this.selectedPage.index++;
          }
       }
@@ -15,11 +15,9 @@ Vue.component('page', {
       <div class="container text-center">
          <div style="margin: 10% 0% 10%;">
             <slot></slot>
-            <div v-if="footer">
-               <hr>
-               <button v-if="index>0" class="btn btn-primary float-left" @click="previous">Powrót</button>
-               <button class="btn btn-primary float-right" @click="next">Dalej</button>
-            </div>
+            <hr>
+            <button v-if="index>0" class="btn btn-primary float-left" @click="previous">Powrót</button>
+            <button class="btn btn-primary float-right" @click="next">{{nextText||"Dalej"}}</button>
          </div>
       </div>
    </div>
@@ -28,16 +26,6 @@ Vue.component('page', {
 
 Vue.component('session-selection', {
    props:["formData", "title", "sessions"],
-   methods:{
-      previous(){
-         this.selectedPage.index--;
-      },
-      next(){
-         if(this.nextPredicate===undefined || this.nextPredicate()){
-            this.selectedPage.index++;
-         }
-      }
-   },
    template:`
 <div>
 <h1 class="font-weight-bold">"{{title}}"</h1>
@@ -54,8 +42,27 @@ Vue.component('session-selection', {
 `
 });
 
+Vue.component("calculator", {
+   props:["seatsCount", "discountValue", "basePrice"],
+   computed:{
+      toPay(){
+         const withoutDiscount=this.seatsCount*this.basePrice;
+         return withoutDiscount-withoutDiscount*(this.discountValue/100);
+      }
+   },
+   template:`
+<div>
+   <h3>Do zapłaty:</h3>
+   <p>{{seatsCount}}x20zł<br>
+      <span v-if="discountValue>0">-{{discountValue}}%<br></span>=>
+      <span class="font-weight-bold">{{toPay}}zł</span>
+   </p>
+</div>
+   `
+})
+
 Vue.component("discount-selection", {
-   props:["formData", "discounts", "toPay"],
+   props:["formData", "discounts", "basePrice"],
    template:`
 <div>
    <h3>Zniżka:</h3>
@@ -67,22 +74,33 @@ Vue.component("discount-selection", {
       </label>
    </div>
    <hr>
-   <h3>Do zapłaty:</h3>
-   <p>{{formData.selectedSeats.size}}x20zł<br>
-      <span v-if="formData.discount.value>0">-{{formData.discount.value}}%<br></span>=>
-      <span class="font-weight-bold">{{toPay}}zł</span>
-   </p>
+   <calculator 
+      :discount-value="formData.discount.value" 
+      :seats-count="formData.selectedSeats.size" 
+      :base-price="basePrice">
+   </calculator>
 </div>
    `
 })
 
 Vue.component('seat-selection', {
    props:["formData", "seats"],
+   methods:{
+      validate(){
+         if(this.formData.selectedSeats.size==0){
+            this.$refs.alert.style.display="block";
+            return false;
+         } else {
+            this.$refs.alert.style.display="none";
+            return true;
+         }
+      }
+   },
    template: `
 <div class="form-group">
    <h3>Wybierz miejsca na sali</h3>
    <hr>
-   <div class="alert alert-danger" role="alert" style="display:none;">
+   <div ref="alert" class="alert alert-danger" role="alert" style="display:none;">
       Musisz wybrać co najmniej jedno miejsce
    </div>
    <div class="row justify-content-center">
@@ -101,13 +119,37 @@ Vue.component('seat-selection', {
    </div>
 </div>
 `
- })
+})
+
+Vue.component("seat-selection-page", {
+   props:["formData", "seats", "selectedPage", "index"],
+   template:`
+<page :index="index" :selected-page="selectedPage" :validator="()=>this.$refs.seats.validate()">
+   <form role="form" class="form-horizontal">
+      <seat-selection ref="seats" :form-data="formData" :seats="seats"></seat-selection>
+   </form>
+</page>
+`
+})
 
 Vue.component('personal-details', {
    props:["formData"],
+   methods:{
+      validate(){
+         const form=this.$refs.form;
+         let result=form.checkValidity();
+         this.$refs.alert.style.display= result ? "none" : "block";
+         form.classList.add('was-validated');
+         return result;
+      }
+   },
    template: `
-<div>
+<form role="form" class="form-horizontal" ref="form">
    <h3>Dane osobowe</h3>
+   <hr>
+   <div ref="alert" class="alert alert-danger" role="alert" style="display:none;">
+      Musisz poprawnie wypełnić wszystkie pola
+   </div>
    <div class="form-group">
       <label for="name">Imię</label>
       <input type="text" class="form-control" id="name" v-model="formData.name" required pattern="[A-ZŻŹĆĄŚĘŁÓŃ][a-zzżźćńółęąś]+"  placeholder="Jan">
@@ -124,52 +166,58 @@ Vue.component('personal-details', {
       <label for="number">Numer Telefonu</label>
       <input type="text" class="form-control" id="number" v-model="formData.number" required pattern="([0-9]{3} ?){3}" placeholder="000 000 000">
    </div>
-</div>
+</form>
 `
 })
 
-Vue.component('recapitulation', {
-   props:["formData", "title", "seats", "discounts", "sessions", "selectedPage", "toPay"],
+Vue.component("personal-details-page", {
+   props:["formData", "selectedPage", "index"],
+   template:`
+<page :index="index" :selected-page="selectedPage" :validator="()=>this.$refs.details.validate()">
+   <personal-details :form-data="formData" ref="details"></personal-details>
+</page>
+`
+})
+
+Vue.component('recapitulation-page', {
+   props:["formData", "title", "seats", "discounts", "sessions", "selectedPage", "basePrice", "index"],
    methods:{
-      submit(event){
-         const form=this.$refs.form;
-         if(form.checkValidity()){
-            this.selectedPage.index++;
-         }
-         form.classList.add('was-validated');
+      validate(){
+         return this.$refs.seats.validate() && this.$refs.details.validate();
       }
    },
    template: `
-<form role="form" class="form-horizontal" style="margin: 5% 5% 10%;" ref="form">
+<page :index="index" :selected-page="selectedPage" :validator="validate" nextText="Wyślij">
    <h1>Podsumowanie</h1>
    <hr>
-   <div class="form-group">
-      <label for="film">Film:</label>
-      <input type="text" class="form-control" id="film" v-bind:value="title" readonly>
-   </div>
-   <div class="form-group">
-      <label for="formData.session">Seans:</label>
-      <select v-model="formData.session" class="form-control" id="session">
-         <option v-for="s in sessions">{{s}}</option>
-      </select>
-   </div>
-   <seat-selection :form-data="formData" :seats="seats"></seat-selection>
-   <div class="form-group">
-      <label for="discount">Zniżka:</label>
-      <select class="form-control" id="discount" v-model="formData.discount">
-         <option v-for="d in discounts" v-bind:value="d">{{d.toString()}}</option>
-      </select>
-   </div>
-   <h3>Do zapłaty:</h3>
-   <p>{{formData.selectedSeats.size}}x20zł<br>
-      <span v-if="formData.discount.value>0">-{{formData.discount.value}}%<br></span>=>
-      <span class="font-weight-bold">{{toPay}}zł</span></p>
+   <form role="form" class="form-horizontal">
+      <div class="form-group">
+         <label for="film">Film:</label>
+         <input type="text" class="form-control" id="film" v-bind:value="title" readonly>
+      </div>
+      <div class="form-group">
+         <label for="formData.session">Seans:</label>
+         <select v-model="formData.session" class="form-control" id="session">
+            <option v-for="s in sessions">{{s}}</option>
+         </select>
+      </div>
+      <seat-selection :form-data="formData" :seats="seats" ref="seats"></seat-selection>
+      <div class="form-group">
+         <label for="discount">Zniżka:</label>
+         <select class="form-control" id="discount" v-model="formData.discount">
+            <option v-for="d in discounts" v-bind:value="d">{{d.toString()}}</option>
+         </select>
+      </div>
+   </form>
+   <calculator 
+      :discount-value="formData.discount.value" 
+      :seats-count="formData.selectedSeats.size" 
+      :base-price="basePrice">
+   </calculator>
    <hr>
-   <personal-details :form-data="formData"></personal-details>
+   <personal-details :form-data="formData" ref="details"></personal-details>
    <hr>
-   <button type="button" class="btn btn-primary float-left" @click="selectedPage.index--">Powrót</button>
-   <button type="button" class="btn btn-primary float-right"  @click="submit">Zatwierdź</button>
-</form>
+</page>
 `
 });
 

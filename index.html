@@ -35,25 +35,33 @@
 
 <body>
    <main id="main" role="main" class="flex-shrink-0">
-      <page footer="true" index="0" :selected-page="selectedPage">
+      <page index="0" :selected-page="selectedPage">
          <session-selection :form-data="formData" :title="title" :sessions="sessions"></session-selection>
       </page>
-      <page footer="true" index="1" :selected-page="selectedPage">
-         <form role="form" class="form-horizontal">
-            <seat-selection :form-data="formData" :seats="seats"></seat-selection>
-         </form>
+      <seat-selection-page 
+         :form-data="formData" 
+         :seats="seats" 
+         :selected-page="selectedPage"
+         :index="1">
+      </seat-selection-page>
+      <page index="2" :selected-page="selectedPage">
+         <discount-selection :form-data="formData" :discounts="discounts" :base-price="basePrice"></discount-selection>
       </page>
-      <page footer="true" index="2" :selected-page="selectedPage">
-         <discount-selection :form-data="formData" :discounts="discounts" :to-pay="toPay"></discount-selection>
-      </page>
-      <page footer="true" index="3" :selected-page="selectedPage">
-         <form role="form" class="form-horizontal">
-            <personal-details :form-data="formData"></personal-details>
-         </form>
-      </page>
-      <page index="4" :selected-page="selectedPage">
-         <recapitulation :form-data="formData" :title="title" :seats="seats" :discounts="discounts" :sessions="sessions" :selected-page="selectedPage" :to-pay="toPay"></recapitulation>
-      </page>
+      <personal-details-page
+         :form-data="formData" 
+         :selected-page="selectedPage"
+         :index="3">
+      </personal-details-page>
+      <recapitulation-page
+         :form-data="formData" 
+         :title="title" 
+         :seats="seats" 
+         :discounts="discounts" 
+         :sessions="sessions" 
+         :selected-page="selectedPage"
+         index="4"
+         :base-price="basePrice">
+      </recapitulation-page>
       <page index="5" :selected-page="selectedPage">
          <h1>Dane które byłyby wysłane do serwera</h1>
          <div class="text-left">
